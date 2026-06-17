@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Studio Zero</title>
+    <style>
+        body, html {
+            margin: 0; padding: 0; overflow: hidden;
+            background-color: #050505;
+        }
+        #portal-screen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #000; display: flex; justify-content: center;
+            align-items: center; z-index: 10; transition: opacity 1.2s ease;
+        }
+        /* The Birth Spark */
+        .spark {
+            width: 4px; height: 4px; background: #fff; border-radius: 50%;
+            box-shadow: 0 0 20px #fff, 0 0 40px #fff;
+            animation: ignite 3.5s cubic-bezier(0.1, 0.8, 0.2, 1) forwards;
+        }
+        @keyframes ignite {
+            0% { transform: scale(0); opacity: 0; }
+            20% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1); width: 4px; height: 4px; box-shadow: 0 0 20px #fff; }
+            /* The slit expansion */
+            75% { width: 100vw; height: 2px; border-radius: 0; box-shadow: 0 0 30px #fff; opacity: 1; }
+            /* The blinding white flash */
+            85% { width: 100vw; height: 100vh; background: #fff; box-shadow: none; opacity: 1; }
+            100% { width: 100vw; height: 100vh; background: #fff; opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+    <div id="portal-screen">
+        <div class="spark"></div>
+    </div>
+    <script>
+        setTimeout(() => {
+            const portal = document.getElementById('portal-screen');
+            portal.style.opacity = '0';
+            setTimeout(() => portal.remove(), 1200);
+        }, 3500);
+    </script>
+</body>
+</html>
