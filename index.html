@@ -9,39 +9,117 @@
             margin: 0; padding: 0; overflow: hidden;
             background-color: #050505;
         }
-        #portal-screen {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: #000; display: flex; justify-content: center;
-            align-items: center; z-index: 10; transition: opacity 1.2s ease;
-        }
-        /* The Birth Spark */
-        .spark {
-            width: 4px; height: 4px; background: #fff; border-radius: 50%;
-            box-shadow: 0 0 20px #fff, 0 0 40px #fff;
-            animation: ignite 3.5s cubic-bezier(0.1, 0.8, 0.2, 1) forwards;
-        }
-        @keyframes ignite {
-            0% { transform: scale(0); opacity: 0; }
-            20% { transform: scale(1); opacity: 1; }
-            50% { transform: scale(1); width: 4px; height: 4px; box-shadow: 0 0 20px #fff; }
-            /* The slit expansion */
-            75% { width: 100vw; height: 2px; border-radius: 0; box-shadow: 0 0 30px #fff; opacity: 1; }
-            /* The blinding white flash */
-            85% { width: 100vw; height: 100vh; background: #fff; box-shadow: none; opacity: 1; }
-            100% { width: 100vw; height: 100vh; background: #fff; opacity: 0; }
+        canvas {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            z-index: 10; pointer-events: none; transition: opacity 1s ease;
         }
     </style>
 </head>
 <body>
-    <div id="portal-screen">
-        <div class="spark"></div>
-    </div>
+    <canvas id="big-bang-canvas"></canvas>
+
     <script>
+        const canvas = document.getElementById('big-bang-canvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Match screen resolution perfectly for your phone rig
+        function resize() {
+            canvas.width = window.innerWidth * window.devicePixelRatio;
+            canvas.height = window.innerHeight * window.devicePixelRatio;
+            ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        const particles = [];
+        const particleCount = 250; // High density cosmic debris
+        const centerX = window.innerWidth / 2;
+        const centerY = window.innerHeight / 2;
+        let timeline = 0;
+
+        class CosmicParticle {
+            constructor() {
+                this.x = centerX;
+                this.y = centerY;
+                // Generate a random 360-degree direction for the explosion trajectory
+                const angle = Math.random() * Math.PI * 2;
+                const speed = Math.random() * 8 + 2; // Explosive velocity
+                this.vx = Math.cos(angle) * speed;
+                this.vy = Math.sin(angle) * speed;
+                this.size = Math.random() * 2.5 + 0.5;
+                this.alpha = 1;
+                this.decay = Math.random() * 0.015 + 0.008; // Rate of fading out
+            }
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                // Add minor air friction over time to look organic
+                this.vx *= 0.98;
+                this.vy *= 0.98;
+                this.alpha -= this.decay;
+            }
+            draw() {
+                ctx.save();
+                ctx.globalAlpha = Math.max(0, this.alpha);
+                ctx.fillStyle = '#ffffff';
+                ctx.shadowColor = '#ffffff';
+                ctx.shadowBlur = 12; // Intense glowing core effect
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            }
+        }
+
+        function animate() {
+            timeline++;
+            // Create a trail effect rather than a full screen clear
+            ctx.fillStyle = 'rgba(5, 5, 5, 0.2)';
+            ctx.fillRect(0, 0, window.innerWidth, window.innerHeight);
+
+            // Phase 1: The Initial Primordial Core Spark (First 45 frames)
+            if (timeline < 45) {
+                ctx.save();
+                let corePulse = Math.sin(timeline * 0.15) * 4 + 6;
+                ctx.fillStyle = '#ffffff';
+                ctx.shadowColor = '#ffffff';
+                ctx.shadowBlur = 30;
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, corePulse, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            }
+            
+            // Phase 2: TRIGGER THE BIG BANG DETONATION!
+            if (timeline === 45) {
+                for (let i = 0; i < particleCount; i++) {
+                    particles.push(new CosmicParticle());
+                }
+            }
+
+            // Phase 3: Simulate and render the expanding explosion debris
+            if (timeline >= 45) {
+                for (let i = particles.length - 1; i >= 0; i--) {
+                    particles[i].update();
+                    particles[i].draw();
+                    if (particles[i].alpha <= 0) particles.splice(i, 1);
+                }
+            }
+
+            // Kill the canvas once all space matter dissolves entirely into the dark void
+            if (timeline > 45 && particles.length === 0) {
+                canvas.style.opacity = '0';
+                setTimeout(() => canvas.remove(), 1000);
+                return;
+            }
+
+            requestAnimationFrame(animate);
+        }
+
+        // Delay setup slightly to allow the web browser tab to finish loading elements smoothly
         setTimeout(() => {
-            const portal = document.getElementById('portal-screen');
-            portal.style.opacity = '0';
-            setTimeout(() => portal.remove(), 1200);
-        }, 3500);
+            animate();
+        }, 500);
     </script>
 </body>
 </html>
